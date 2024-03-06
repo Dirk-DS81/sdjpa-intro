@@ -1,12 +1,19 @@
 package guru.springframework.sdjpaintro;
 
-import guru.springframework.sdjpaintro.repositories.BookRepository;
+import guru.springframework.sdjpaintro.domain.AuthorUuid;
+import guru.springframework.sdjpaintro.domain.BookNatural;
+import guru.springframework.sdjpaintro.domain.BookUuid;
+import guru.springframework.sdjpaintro.domain.composite.AuthorComposite;
+import guru.springframework.sdjpaintro.domain.composite.AuthorEmbedded;
+import guru.springframework.sdjpaintro.domain.composite.NameId;
+import guru.springframework.sdjpaintro.repositories.*;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.test.annotation.Commit;
 import org.springframework.test.context.ActiveProfiles;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -23,6 +30,21 @@ public class MySQLIntegrationTest {
     @Autowired
     BookRepository bookRepository;
 
+    @Autowired
+    AuthorUuidRepository authorUuidRepository;
+
+    @Autowired
+    BookUuidRepository bookUuidRepository;
+
+    @Autowired
+    BookNaturalRepository bookNaturalRepository;
+
+    @Autowired
+    AuthorCompositeRepository authorCompositeRepository;
+
+    @Autowired
+    AuthorEmbeddedRepository authorEmbeddedRepository;
+
     @Test
     void testMySQL() {
         long countBefore = bookRepository.count();
@@ -30,6 +52,64 @@ public class MySQLIntegrationTest {
 
     }
 
+    @Test
+    void testAuthorUuid() {
+        AuthorUuid authorUuid = authorUuidRepository.save(new AuthorUuid());
+        assertThat(authorUuid).isNotNull();
+        assertThat(authorUuid.getId()).isNotNull();
+
+        AuthorUuid fetched = authorUuidRepository.getById(authorUuid.getId());
+        assertThat(authorUuid).isEqualTo(fetched);
+    }
+
+    @Test
+    void testBookUuid() {
+        BookUuid bookUuid = bookUuidRepository.save(new BookUuid());
+        assertThat(bookUuid).isNotNull();
+        assertThat(bookUuid.getId()).isNotNull();
+
+        BookUuid fetched = bookUuidRepository.getById(bookUuid.getId());
+        assertThat(bookUuid).isEqualTo(fetched);
+    }
+
+    @Test
+    void bookNaturalTest() {
+        BookNatural bookNatural = new BookNatural();
+        bookNatural.setTitle("My Booky");
+        BookNatural saved = bookNaturalRepository.save(bookNatural);
+
+        BookNatural fetched = bookNaturalRepository.getById(saved.getTitle());
+        assertThat(fetched).isNotNull();
+    }
+
+    @Test
+    void authorCompositeTest() {
+        NameId nameId = new NameId("Dirk", "De Smedt");
+        AuthorComposite authorComposite = new AuthorComposite();
+        authorComposite.setFirstName(nameId.getFirstName());
+        authorComposite.setLastName(nameId.getLastName());
+        authorComposite.setCountry("Belgium");
+
+        AuthorComposite saved = authorCompositeRepository.save(authorComposite);
+        assertThat(saved).isNotNull();
+
+        AuthorComposite fetched = authorCompositeRepository.getReferenceById(nameId);
+        assertThat(fetched).isNotNull();
+    }
+
+    @Test
+    void authorEmbeddedTest() {
+        NameId nameId = new NameId("Dirk", "De Smedt");
+        AuthorEmbedded authorEmbedded = new AuthorEmbedded(nameId);
+
+        AuthorEmbedded saved = authorEmbeddedRepository.save(authorEmbedded);
+        assertThat(saved).isNotNull();
+
+        AuthorEmbedded fetched = authorEmbeddedRepository.getReferenceById(nameId);
+        assertThat(fetched).isNotNull();
+
+
+    }
 }
 
 

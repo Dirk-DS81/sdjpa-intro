@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class SdjpaIntroApplication {
 
     public static void main(String[] args) {
+        System.setProperty("spring.profiles.active", "local,clean");
         SpringApplication.run(SdjpaIntroApplication.class, args);
     }
 
